@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "name": "Harry Potter",
+    "author": "J.K. Rowling"
+  },
+  {
+    "id": 2,
+    "name": "The Lord of the Rings",
+    "author": "J.R.R. Tolkien"
+  },
+  {
+    "id": 3,
+    "name": "The Chronicles of Narnia",
+    "author": "C.S. Lewis"
+  },
+  {
+    "id": 5,
+    "name": "The Monaco",
+    "author": "Suzanne"
+  },
+  {
+    "id": 6,
+    "name": "The Alchemist - Updated",
+    "author": "Paulo Coelho"
+  }
+]

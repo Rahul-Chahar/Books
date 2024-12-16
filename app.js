@@ -1,95 +1,70 @@
-const express = require('express');  
-const path = require('path');  
+const express = require('express');
+const fs = require('fs');
+const bodyParser = require('body-parser');
+const app = express();
+const port = 3000;
 
-const app = express();  
-const PORT = 3000;  
+app.use(bodyParser.json());
 
-// Middleware to parse URL-encoded data  
-app.use(express.urlencoded({ extended: true }));  
+const booksFilePath = './books.json';
 
-// Serve static files  
-app.use(express.static(path.join(__dirname)));  
+const readBooksFromeFile = () => {
+    const books = fs.readFileSync(booksFilePath, 'utf8');
+    return JSON.parse(books);
+};
 
-// Route for the home page  
-app.get('/', (req, res) => {  
-    res.send(`  
-        <!DOCTYPE html>  
-        <html lang="en">  
-        <head>  
-            <meta charset="UTF-8">  
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-            <title>Home</title>  
-            <style>  
-                nav {  
-                    background-color: #f8f9fa;  
-                    padding: 10px;  
-                }  
-                nav a {  
-                    margin: 10px;  
-                    text-decoration: none;  
-                }  
-            </style>  
-        </head>  
-        <body>  
-            <nav>  
-                <a href="/">Home</a>  
-                <a href="/contactus">Contact Us</a>  
-            </nav>  
-            <h1>Welcome to Our Site!</h1>  
-        </body>  
-        </html>  
-    `);  
-});  
+const writeBooksToFile = (books) => {
+    fs.writeFileSync(booksFilePath, JSON.stringify(books, null, 2));
+};
 
-// Route for the contact form  
-app.get('/contactus', (req, res) => {  
-    res.send(`  
-        <!DOCTYPE html>  
-        <html lang="en">  
-        <head>  
-            <meta charset="UTF-8">  
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-            <title>Contact Us</title>  
-        </head>  
-        <body>  
-            <nav>  
-                <a href="/">Home</a>  
-                <a href="/contactus">Contact Us</a>  
-            </nav>  
-            <h1>Contact Us</h1>  
-            <form action="/success" method="POST">  
-                <label for="name">Name:</label>  
-                <input type="text" id="name" name="name" required><br><br>  
-                
-                <label for="email">Email:</label>  
-                <input type="email" id="email" name="email" required><br><br>  
+app.get('/books', (req, res) => {
+    const books = readBooksFromeFile();
+    res.json(books);
+});
 
-                <label for="Phone">Phone:</label>
-                <input type="number" id="phone" name="phone" required><br><br>
+app.get('/books/:id', (req, res) => {
+    const books = readBooksFromeFile();
+    const book = books.find(b => b.id === parseInt(req.params.id));
+    if (!book) res.status(404).send('The book with the given ID was not found');
+    res.json(book);
+});
 
-                <label for="date">Choose a date for appointment:</label>
-                <input type="date" id="date" name="date" required>
+app.post('/books', (req, res) => {
+    const books = readBooksFromeFile();
+    const book = {
+        id: books.length + 1,
+        name: req.body.name,
+        author: req.body.author,
 
-                <label for="time">Choose a time for appointment:</label>
-                <input type="time" id="time" name="time" required><br><br>
+    };
+    books.push(book);
+    writeBooksToFile(books);
+    res.json(book);
+});
+
+app.put('/books/:id', (req, res) => {
+    const books = readBooksFromeFile();
+    const book = books.find(b => b.id === parseInt(req.params.id));
+    if (!book) res.status(404).send('The book with the given ID was not found');
+   
+    book.name = req.body.name || book.name;
+    book.author = req.body.author || book.author;
+
+    writeBooksToFile(books);
+    res.json(book);
+});
+
+app.delete('/books/:id', (req, res) => {
+    const books = readBooksFromeFile();
+    const book = books.find(b => b.id === parseInt(req.params.id));
+    if (!book) res.status(404).send('The book with the given ID was not found');
+    const index = books.indexOf(book);
+    books.splice(index, 1);
+    writeBooksToFile(books);
+    res.json(book);
+});
 
 
-                
-                <button type="submit">Get A Call</button>  
-            </form>  
-        </body>  
-        </html>  
-    `);  
-});  
-
-// Handle form submission  
-app.post('/success', (req, res) => {  
-    let{name, email} = req.body;
-    console.log(`Name: ${name}, Email: ${email}`);  // Log the form data in the console
-    res.send('<h1>Form successfully filled!</h1>');  
-});  
-
-// Start the server  
-app.listen(PORT, () => {  
-    console.log(`Server is running on http://localhost:${PORT}`);  
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
